@@ -1,14 +1,15 @@
 package com.example.jwt.demojwt;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Launcher;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.KeyStoreOptions;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.ext.auth.jwt.JWTOptions;
 import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.JWTAuthHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 
@@ -45,20 +46,28 @@ public class MainVerticle extends AbstractVerticle {
             String statusMessage = HttpResponseStatus.valueOf(statusCode).reasonPhrase();
             System.out.println("response statusMessage = " + statusMessage);
 //            }
-            ctx.response()
-                .setStatusCode(statusCode)
-                .setStatusMessage(statusMessage)
-                .end(statusMessage);
+//            ctx.response()
+//                .setStatusCode(statusCode)
+//                .setStatusMessage(statusMessage)
+//                .end(statusMessage);
 
 
-//            String refreshToken = ctx.request().headers().get("RefreshToken");
-//            String r = refreshToken.substring(refreshToken.indexOf(' '));
-//            jwt.authenticate(new JsonObject()
-//            .put("jwt", r), event -> {
-//
-//            });
+            String refreshToken = ctx.request().getHeader("RefreshToken");
+            if (refreshToken != null && refreshToken.length() > 0) {
+                String r = refreshToken.substring(refreshToken.indexOf(' ') + 1);
+                jwt.authenticate(new JsonObject()
+                        .put("jwt", r)
+                        .put("options", new JsonObject()),
+                    event -> {
 
-            jwtAuthHandler.handle();
+                        if (event.succeeded()) {
+                            User user = event.result();
+
+                            System.out.println(",,,");
+                        }
+                    });
+            }
+
 
         });
 
@@ -87,8 +96,8 @@ public class MainVerticle extends AbstractVerticle {
             String res = "Bearer " + token;
             System.out.println("token = " + res);
 
-            String refreshToken = jwt.generateToken(new JsonObject(), new JWTOptions().setExpiresInSeconds(3600L));
-            ctx.response().end(res + " == " + refreshToken);
+            String refreshToken = "Bearer " + jwt.generateToken(new JsonObject(), new JWTOptions().setExpiresInSeconds(3600L));
+            ctx.response().end(res + "\n" + refreshToken);
         });
 
         // this is the secret API
