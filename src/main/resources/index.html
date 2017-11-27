@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+</head>
+<body>
+
+<h1>Web site with public and private pages</h1>
+
+<br>
+<br>
+
+<div id="login">
+    <button id="generateToken">Get a Token</button>
+    <div id="token">Current token:</div>
+</div>
+
+<br>
+<br>
+
+<div id="test">
+    <a href="#" id="getProtected">Get Protected Resource</a>
+    <div id="protected"></div>
+</div>
+
+<script language="JavaScript">
+    $(document).ready(function () {
+        console.log($('#generateToken'))
+        $('#generateToken').on('click', function () {
+            console.log(1)
+            $.ajax({
+                url: 'http://localhost:8383/api/newToken',
+                dataType: 'text',
+                success: function (text) {
+                    $('#token').html('Current Token: ' + text);
+                }
+            });
+        });
+        $('#getProtected').on('click', function () {
+            $.ajax({
+                url: 'http://localhost:8383/api/protected',
+                dataType: 'text',
+                headers: {
+                    "Authorization": "Bearer " + $('#token').html().substring(15)
+                },
+                success: function (text) {
+                    $('#protected').html(text);
+                },
+                error: function (err) {
+                    $('#protected').html('Error: ' + err.toString());
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
